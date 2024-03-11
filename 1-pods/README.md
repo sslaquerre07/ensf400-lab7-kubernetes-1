@@ -1,4 +1,4 @@
-# Deploying Your First Nginx Pod
+# 1 - Pods
 
 ## What are Kubernetess Pods?
 
@@ -34,7 +34,7 @@ The workflow for creating a Pod in Kubernetes typically involves the following s
 - Create a Pod Manifest: A Pod is defined using a YAML or JSON manifest file that describes its desired state. The manifest includes information such as the Pod name, container specifications, networking details, and any additional configurations.
 - Apply the Manifest: Use the kubectl apply command to apply the Pod manifest and create the Pod. For example:
 ```
-kubectl apply -f pod.yaml
+kubectl apply -f <pod config file>
 ```
 
 - API Server Validation: The kubectl apply command sends the Pod manifest to the Kubernetes API server. The API server validates the manifest's syntax and checks for any conflicts or errors.
@@ -46,7 +46,7 @@ kubectl apply -f pod.yaml
 ## Steps
 
 ```
-cd 1-pods
+cd /workspaces/ensf400-lab7-kubernetes-1/1-pods
 kubectl apply -f pods01.yaml
 ```
 
@@ -319,17 +319,6 @@ Please exit from the shell (`/bin/bash`) session.
 root@webserver:/# exit
 ```
 
-
-## Deleting the Pod
-  
-```bash
-$ kubectl delete -f pods01.yaml
-pod "webserver" deleted
-
-$ kubectl get po -o wide
-No resources found.
-```
-
 ## Get logs of Pod
 
 ```
@@ -354,6 +343,17 @@ $ kubectl logs webserver
 2024/03/09 23:34:21 [notice] 1#1: start worker process 30
 
 ```
+
+## Deleting the Pod
+  
+```bash
+$ kubectl delete -f pods01.yaml
+pod "webserver" deleted
+
+$ kubectl get po -o wide
+No resources found.
+```
+
 # Adding a 2nd container to a Pod
 
 In the microservices architecture, each module should live in its own space and communicate with other modules following a set of rules. But, sometimes we need to deviate a little from this principle. Suppose you have an Nginx web server running and we need to analyze its web logs in real-time. The logs we need to parse are obtained from GET requests to the web server. The developers created a log watcher application that will do this job and they built a container for it. In typical conditions, you’d have a pod for Nginx and another for the log watcher. However, we need to eliminate any network latency so that the watcher can analyze logs the moment they are available. A solution for this is to place both containers on the same pod.
@@ -363,7 +363,7 @@ Having both containers on the same pod allows them to communicate through the lo
 
 Let us see how a pod can host more than one container. Let’s take a look to the [`pods02.yaml`](pods02.yaml) file. It contains the following lines:
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -380,76 +380,71 @@ spec:
 
 Run the following command:
 
-```
+```bash
 $ kubectl apply -f pods02.yaml
 ```
 
 
 
-```
+```bash
 $ kubectl get po -o wide
-NAME        READY   STATUS              RESTARTS   AGE   IP       NODE                                                NOMINATED NODE   READINESS GATES
-webserver   0/2     ContainerCreating   0          13s   <none>   gke-standard-cluster-1-default-pool-78257330-5hs8   <none>           <none>
- ```
- 
- ```
+NAME        READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+webserver   2/2     Running   0          73s   10.244.0.4   minikube   <none>           <none>
+``` 
+
+ ```bash
 $ kubectl get po,svc,deploy
 NAME            READY   STATUS    RESTARTS   AGE
-pod/webserver   2/2     Running   0          3m6s
+pod/webserver   2/2     Running   0          2m1s
+
 NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
-service/kubernetes   ClusterIP   10.12.0.1    <none>        443/TCP   107m
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   5m30s
 ```
-
-
-```
-$ kubectl get po -o wide
-NAME        READY   STATUS    RESTARTS   AGE     IP         NODE                                                NOMINATED NODE   READINESS GATES
-webserver   2/2     Running   0          3m37s   10.8.0.5   gke-standard-cluster-1-default-pool-78257330-5hs8   <none>           <none>
-```
-
-
 
 ## How to verify 2 containers are running inside a Pod?
 
+```bash
+kubectl describe pod webserver
+```
 
 ```
-$ kubectl describe po
-```
-
-```
+...
 Containers:
   webserver:
-    Container ID:   docker://0564fcb88f7c329610e7da24cba9de6555c0183814cf517e55d2816c6539b829
+    Container ID:   docker://72af8219bcff3848b6f607f381e89b5e39c214c824c6e64ff6428fbae92b7300
     Image:          nginx:latest
-    Image ID:       docker-pullable://nginx@sha256:36b77d8bb27ffca25c7f6f53cadd059aca2747d46fb6ef34064e31727325784e
+    Image ID:       docker-pullable://nginx@sha256:c26ae7472d624ba1fafd296e73cecc4f93f853088e6a9c13c0d52f6ca5865107
     Port:           80/TCP
+    Host Port:      0/TCP
     State:          Running
-      Started:      Wed, 08 Jan 2020 13:21:57 +0530
+      Started:      Sun, 10 Mar 2024 19:03:55 +0000
     Ready:          True
     Restart Count:  0
-    Requests:
-      cpu:        100m
-    Environment:  <none>
+    Environment:    <none>
     Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from default-token-xhgmm (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9mdw5 (ro)
   webwatcher:
-    Container ID:   docker://4cebbb220f7f9695f4d6492509e58152ba661f3ab8f4b5d0a7adec6c61bdde26
+    Container ID:   docker://84e57479872289c971d04a8da326a22e60ac851e225a8960efc1e92395be2911
     Image:          afakharany/watcher:latest
     Image ID:       docker-pullable://afakharany/watcher@sha256:43d1b12bb4ce6e549e85447678a28a8e7b9d4fc398938a6f3e57d2908a9b7d80
     Port:           <none>
+    Host Port:      <none>
     State:          Running
-      Started:      Wed, 08 Jan 2020 13:22:26 +0530
+      Started:      Sun, 10 Mar 2024 19:04:29 +0000
     Ready:          True
     Restart Count:  0
-    Requests:
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9mdw5 (ro)
+...
  ```
 
 Since we have two containers in a pod, we will need to use the `-c` option with `kubectl` when we need to address a specific container. For example:
 
-```
+```bash
 $ kubectl exec -it webserver -c webwatcher -- /bin/bash
 
-root@webserver:/# cat /etc/hosts
+root@webserver:/# cat etc/hosts
 # Kubernetes-managed hosts file.
 127.0.0.1       localhost
 ::1     localhost ip6-localhost ip6-loopback
@@ -457,18 +452,18 @@ fe00::0 ip6-localnet
 fe00::0 ip6-mcastprefix
 fe00::1 ip6-allnodes
 fe00::2 ip6-allrouters
-10.8.0.5        webserver
+10.244.0.4      webserver
 ```
 
 Please exit from the shell (`/bin/bash`) session.
 
-```
+```bash
 root@webserver:/# exit
 ```
 
 ## Cleaning up
 
-```
+```bash
 kubectl delete -f pods02.yaml
 ```
 
@@ -493,7 +488,7 @@ Kubernetes Volumes enables data to survive container restarts, but these volumes
 
 A standard use case for a multi-container Pod with a shared Volume is when one container writes logs or other files to the shared directory, and the other container reads from the shared directory. For example, we can create a Pod like so ([pods03.yaml](pods03.yaml)):
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -524,65 +519,65 @@ spec:
 In this file (`pods03.yaml`) a volume named `html` has been defined. Its type is `emptyDir`, which means that the volume is first created when a Pod is assigned to a node, and exists as long as that Pod is running on that node. As the name says, it is initially empty. The `1st` container runs nginx server and has the shared volume mounted to the directory `/usr/share/nginx/html`. The `2nd` container uses the Debian image and has the shared volume mounted to the directory `/html`. Every second, the `2nd` container adds the current date and time into the `index.html` file, which is located in the shared volume. When the user makes an HTTP request to the Pod, the Nginx server reads this file and transfers it back to the user in response to the request.
 
 
-![Image](https://raw.githubusercontent.com/collabnix/kubelabs/master/pods101/multicontainerpod.png)
-
-```
+```bash
 kubectl apply -f pods03.yaml
 ```
 
-```
-[Captains-Bay]🚩 >  kubectl get po,svc
-NAME      READY     STATUS    RESTARTS   AGE
-po/mc1    2/2       Running   0          11s
+```bash
+$ kubectl get po,svc
+NAME      READY   STATUS    RESTARTS   AGE
+pod/mc1   2/2     Running   0          34s
 
-NAME             TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
-svc/kubernetes   ClusterIP   10.15.240.1   <none>        443/TCP   1h
-[Captains-Bay]🚩 >  kubectl describe po mc1
-Name:         mc1
-Namespace:    default
-Node:         gke-k8s-lab1-default-pool-fd9ef5ad-pc18/10.140.0.16
-Start Time:   Wed, 08 Jan 2020 14:29:08 +0530
-Labels:       <none>
-Annotations:  kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"name":"mc1","namespace":"default"},"spec":{"containers":[{"image":"nginx","name":"1st","v...
-              kubernetes.io/limit-ranger=LimitRanger plugin set: cpu request for container 1st; cpu request for container 2nd
-Status:       Running
-IP:           10.12.2.6
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   10m
+
+$ kubectl describe po mc1
+Name:             mc1
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             minikube/192.168.49.2
+Start Time:       Sun, 10 Mar 2024 19:10:10 +0000
+Labels:           <none>
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.5
+IPs:
+  IP:  10.244.0.5
 Containers:
   1st:
-    Container ID:   docker://b08eb646f90f981cd36c605bf8fead3ca62178c7863598fd4558cb026ed067dd
+    Container ID:   docker://31987da31402a8a3cf11bcd598fd01b05057fde4b695b608af802276efeb8565
     Image:          nginx
-    Image ID:       docker-pullable://nginx@sha256:36b77d8bb27ffca25c7f6f53cadd059aca2747d46fb6ef34064e31727325784e
+    Image ID:       docker-pullable://nginx@sha256:c26ae7472d624ba1fafd296e73cecc4f93f853088e6a9c13c0d52f6ca5865107
     Port:           <none>
+    Host Port:      <none>
     State:          Running
-      Started:      Wed, 08 Jan 2020 14:29:09 +0530
+      Started:      Sun, 10 Mar 2024 19:10:13 +0000
     Ready:          True
     Restart Count:  0
-    Requests:
-      cpu:        100m
-    Environment:  <none>
+    Environment:    <none>
     Mounts:
       /usr/share/nginx/html from html (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from default-token-xhgmm (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-qfdjs (ro)
   2nd:
-    Container ID:  docker://63180b4128d477810d6062342f4b8e499de684ffd69ad245c29118e1661eafcb
+    Container ID:  docker://2dd758cff940ab1ca6c9c51df7f520234e79d54ea0cb33145bc88a84bdfa4a32
     Image:         debian
-    Image ID:      docker-pullable://debian@sha256:c99ed5d068d4f7ff36c7a6f31810defebecca3a92267fefbe0e0cf2d9639115a
+    Image ID:      docker-pullable://debian@sha256:4482958b4461ff7d9fabc24b3a9ab1e9a2c85ece07b2db1840c7cbc01d053e90
     Port:          <none>
+    Host Port:     <none>
     Command:
       /bin/sh
       -c
     Args:
       while true; do date >> /html/index.html; sleep 1; done
     State:          Running
-      Started:      Wed, 08 Jan 2020 14:29:14 +0530
+      Started:      Sun, 10 Mar 2024 19:10:19 +0000
     Ready:          True
     Restart Count:  0
-    Requests:
-      cpu:        100m
-    Environment:  <none>
+    Environment:    <none>
     Mounts:
       /html from html (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from default-token-xhgmm (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-qfdjs (ro)
 Conditions:
   Type              Status
   Initialized       True 
@@ -591,44 +586,47 @@ Conditions:
   PodScheduled      True 
 Volumes:
   html:
-    Type:    EmptyDir (a temporary directory that shares a pod's lifetime)
-    Medium:  
-  default-token-xhgmm:
-    Type:        Secret (a volume populated by a Secret)
-    SecretName:  default-token-xhgmm
-    Optional:    false
-QoS Class:       Burstable
-Node-Selectors:  <none>
-Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
-                 node.kubernetes.io/unreachable:NoExecute for 300s
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-qfdjs:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
 Events:
-  Type    Reason     Age   From                                              Message
-  ----    ------     ----  ----                                              -------
-  Normal  Scheduled  18s   default-scheduler                                 Successfully assigned default/mc1 to gke-k8s-lab1-default-pool-fd9ef5ad-pc18
-  Normal  Pulling    17s   kubelet, gke-k8s-lab1-default-pool-fd9ef5ad-pc18  pulling image "nginx"
-  Normal  Pulled     17s   kubelet, gke-k8s-lab1-default-pool-fd9ef5ad-pc18  Successfully pulled image "nginx"
-  Normal  Created    17s   kubelet, gke-k8s-lab1-default-pool-fd9ef5ad-pc18  Created container
-  Normal  Started    17s   kubelet, gke-k8s-lab1-default-pool-fd9ef5ad-pc18  Started container
-  Normal  Pulling    17s   kubelet, gke-k8s-lab1-default-pool-fd9ef5ad-pc18  pulling image "debian"
-  Normal  Pulled     13s   kubelet, gke-k8s-lab1-default-pool-fd9ef5ad-pc18  Successfully pulled image "debian"
-  Normal  Created    12s   kubelet, gke-k8s-lab1-default-pool-fd9ef5ad-pc18  Created container
-  Normal  Started    12s   kubelet, gke-k8s-lab1-default-pool-fd9ef5ad-pc18  Started container
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  48s   default-scheduler  Successfully assigned default/mc1 to minikube
+  Normal  Pulling    47s   kubelet            Pulling image "nginx"
+  Normal  Pulled     46s   kubelet            Successfully pulled image "nginx" in 837ms (837ms including waiting)
+  Normal  Created    46s   kubelet            Created container 1st
+  Normal  Started    45s   kubelet            Started container 1st
+  Normal  Pulling    45s   kubelet            Pulling image "debian"
+  Normal  Pulled     40s   kubelet            Successfully pulled image "debian" in 5.633s (5.633s including waiting)
+  Normal  Created    39s   kubelet            Created container 2nd
+  Normal  Started    39s   kubelet            Started container 2nd
 ```
 
 
-
-```
+```bash
 $ kubectl exec mc1 -c 1st -- /bin/cat /usr/share/nginx/html/index.html
 ...
-Wed Jan  8 08:59:14 UTC 2020
-Wed Jan  8 08:59:15 UTC 2020
-Wed Jan  8 08:59:16 UTC 2020
- 
+Sun Mar 10 19:10:19 UTC 2024
+Sun Mar 10 19:10:20 UTC 2024
+Sun Mar 10 19:10:21 UTC 2024
+...
+
 $ kubectl exec mc1 -c 2nd -- /bin/cat /html/index.html
 ...
-Wed Jan  8 08:59:14 UTC 2020
-Wed Jan  8 08:59:15 UTC 2020
-Wed Jan  8 08:59:16 UTC 2020
+Sun Mar 10 19:11:28 UTC 2024
+Sun Mar 10 19:11:29 UTC 2024
+Sun Mar 10 19:11:30 UTC 2024
 ```
 
 ## Cleaning Up
@@ -636,8 +634,3 @@ Wed Jan  8 08:59:16 UTC 2020
 ```
 kubectl delete -f pods03.yaml
 ```
-
-
-
-
-

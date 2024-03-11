@@ -1,4 +1,4 @@
-# Kubernetes ReplicaSet
+# 2 - ReplicaSets
 
 - ReplicaSets are Kubernetes controllers that are used to maintain the number and running state of pods. 
 - It uses labels to select pods that it should be managing. 
@@ -39,21 +39,21 @@ To be able to create new pods if necessary, the ReplicaSet definition includes a
 
 # Creating Your First ReplicaSet
 
-```
-cd 3-replicasets
+```bash
+cd /workspaces/ensf400-lab7-kubernetes-1/2-replicasets
 ```
 
-```
+```bash
 kubectl apply -f nginx_replicaset.yaml
 ```
 
-```
+```bash
 kubectl get rs
 ```
 
-```
+```bash
 NAME   DESIRED   CURRENT   READY   AGE
-web	4     	4     	4   	2m
+web    4         4         4       15s
 ```
 
 # A Peep into the ReplicaSet definition file
@@ -72,13 +72,15 @@ Let’s examine the definition file that was used to create our ReplicaSet:
 
 OK, so we do have four pods running, and our ReplicaSet reports that it is controlling four pods. In a busier environment, you may want to verify that a particular pod is actually managed by this ReplicaSet and not by another controller. By simply querying the pod, you can get this info:
 
-```
+```bash
 kubectl get pods web-6n9cj -o yaml | grep -A 5 owner
 ```
 
+(NOTE: the pod name may be different because of the random string in the end. Use `kubectl get po` and pick your own valid pod name.)
+
 The first part of the command will get all the pod information, which may be too verbose. Using grep with the -A flag (it takes a number and prints that number of lines after the match) will get us the required information as in the example:
 
-```
+```yaml
 ownerReferences:
   - apiVersion: apps/v1
 	blockOwnerDeletion: true
@@ -91,17 +93,19 @@ ownerReferences:
 
 You can remove (not delete) a pod that is managed by a ReplicaSet by simply changing its label. Let’s isolate one of the pods created in our previous example:
 
-```
+```bash
 kubectl edit pods web-44cjb
 ```
+(NOTE: the pod name may be different because of the random string in the end. Use `kubectl get po` and pick your own valid pod name.)
+
 
 Then, once the YAML file is opened, change the pod label to be role=isolated or anything different than role=web. In a few moments, run kubectl get pods. You will notice that we have five pods now. That’s because the ReplicaSet dutifully created a new pod to reach the desired number of four pods. The isolated one is still running, but it is no longer managed by the ReplicaSet.
 
 
-# Scaling the Replicas to 5
+# Scaling the Replicas to 6
 
-```
-$ kubectl scale --replicas=5 -f nginx_replicaset.yaml
+```bash
+$ kubectl scale --replicas=6 -f nginx_replicaset.yaml
 ```
 
 
@@ -113,7 +117,7 @@ You can easily change the number of pods a particular ReplicaSet manages in one 
 
 - Use kubectl directly. For example, kubectl scale --replicas=2 rs/web. Here, I’m scaling down the ReplicaSet used in the article’s example to manage two pods instead of four. The ReplicaSet will get rid of two pods to maintain the desired count. If you followed the previous section, you may find that the number of running pods is three instead of two; as we isolated one of the pods so it is no longer managed by our ReplicaSet.
 
-```
+```bash
 kubectl autoscale rs web --max=5
 ```
 
@@ -125,7 +129,7 @@ The recommended practice is to always use the ReplicaSet’s template for creati
 
 Deploy a pod by using a definition file like the following:
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -140,13 +144,13 @@ spec:
 
 It looks a lot like the other pods, but it is using Apache (httpd) instead of Nginx for an image. Using kubectl, we can apply this definition like:
 
-```
+```bash
 kubectl apply -f orphan.yaml
 ```
 
 Give it a few moments for the image to get pulled and the container is spawned then run kubectl get pods. You should see an output that looks like the following:
 
-```
+```bash
 NAME    	READY   STATUS    	RESTARTS   AGE
 orphan  	0/1 	Terminating   0      	1m
 web-6n9cj   1/1 	Running   	0      	25m
@@ -159,19 +163,19 @@ The pod is being terminated by the ReplicaSet because, by adopting it, the contr
 
 Another scenario where the ReplicaSet won’t terminate the bare pod is that the latter gets created before the ReplicaSet does. To demonstrate this case, let’s destroy our ReplicaSet:
 
-```
+```bash
 kubectl delete -f nginx_replicaset.yaml
 ```
 
 Now, let’s create it again (our orphan pod is still running):
 
-```
+```bash
 kubectl apply -f nginx_replicaset.yaml
 ```
 
 Let’s have a look at our pods status by running kubectl get pods. The output should resemble the following:
 
-```
+```bash
 orphan  	1/1 	Running   0      	29s
 web-44cjb   1/1 	Running   0      	12s
 web-hcr9j   1/1 	Running   0      	12s
@@ -182,18 +186,18 @@ The situation now is that we’re having three pods running Nginx, and one pod r
 
 Let’s do just that:
 
-```
+```bash
 kubectl delete pods orphan
 ```
 
 Now, let’s see how the ReplicaSet responded to this event:
 
-```
+```bash
 kubectl get pods
 ```
 The output should be something like:
 
-```
+```bash
 NAME    	READY   STATUS          	RESTARTS   AGE
 web-44cjb   1/1 	Running         	0      	24s
 web-5kjwx   0/1 	ContainerCreating   0      	3s
@@ -211,19 +215,19 @@ The bottom line: you should never create a pod with a label that matches the sel
 
 # Deleting Replicaset
 
-```
+```bash
 kubectl delete rs ReplicaSet_name
 ```
 
 Alternatively, you can also use the file that was used to create the resource (and possibly, other resource definitions as well) to delete all the resources defined in the file as follows:
 
-```
+```bash
 kubectl delete -f definition_file.yaml
 ```
 
 The above commands will delete the ReplicaSet and all the pods that it manges. But sometimes you may want to just delete the ReplicaSet resource, keeping the pods unowned (orphaned). Maybe you want to manually delete the pods and you don’t want the ReplicaSet to restart them. This can be done using the following command:
 
-```
+```bash
 kubectl delete rs ReplicaSet_name --cascade=false
 ```
 

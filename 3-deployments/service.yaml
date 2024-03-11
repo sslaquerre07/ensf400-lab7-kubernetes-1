@@ -4,6 +4,7 @@ metadata:
   name: nginx
   labels: 
     name: nginx
+    run: my-nginx
 spec:
   ports:
     - name: http
