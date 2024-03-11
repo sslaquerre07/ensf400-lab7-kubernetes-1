@@ -16,3 +16,7 @@ minikube start
 
 This step will start the Minikube service in a container.
 
+## Steps
+
+Go to Section 1 - 6 and complete the steps for each section. The steps can be found in the `README.md` files in each subdirectory.
+
