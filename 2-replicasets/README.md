@@ -135,7 +135,7 @@ kind: Pod
 metadata:
   name: orphan
   labels:
-	role: web
+    role: web
 spec:
   containers:
   - name: orphan
