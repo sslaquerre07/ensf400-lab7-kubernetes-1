@@ -148,18 +148,17 @@ It looks a lot like the other pods, but it is using Apache (httpd) instead of Ng
 kubectl apply -f orphan.yaml
 ```
 
-Give it a few moments for the image to get pulled and the container is spawned then run kubectl get pods. You should see an output that looks like the following:
+Give it a few moments for the image to get pulled and the container is spawned then run kubectl get pods. You should not see the `orphan` pod. It is as if `orphan.yaml` is not applied.
 
 ```bash
 NAME    	READY   STATUS    	RESTARTS   AGE
-orphan  	0/1 	Terminating   0      	1m
 web-6n9cj   1/1 	Running   	0      	25m
 web-7kqbm   1/1 	Running   	0      	25m
 web-9src7   1/1 	Running   	0      	25m
 web-fvxzf   1/1 	Running   	0      	25m
 ```
 
-The pod is being terminated by the ReplicaSet because, by adopting it, the controller has more pods than it was configured to handle. So, it is killing the excess one.
+The pod is not create because, by adopting it, the controller would have more pods than it was configured to handle. So, it is killing the excess one.
 
 Another scenario where the ReplicaSet won’t terminate the bare pod is that the latter gets created before the ReplicaSet does. To demonstrate this case, let’s destroy our ReplicaSet:
 
