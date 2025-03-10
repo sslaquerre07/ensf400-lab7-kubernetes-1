@@ -40,8 +40,17 @@ Each member of the group should be able to answer all of the following questions
         - cd /workspaces/ensf400-lab7-kubernetes-1/1-pods
         - kubectl apply -f pods01.yaml
     - Retrive the node the pod has started on: kubectl get pods -o wide
+    - Finally delete the node: kubectl delete -f pods01.yaml
 <br />
 - Q2: How to scale a ReplicaSet? Use an example to demonstrate scaling a ReplicaSet to 3 replicas.
+- A: A simple command, for the class example is: kubectl scale --replicas=3 -f nginx_replicaset.yaml
+- Execution Steps:
+    - Start the ReplicaSet:
+        - cd /workspaces/ensf400-lab7-kubernetes-1/2-replicasets
+        - kubectl apply -f nginx_replicaset.yaml
+    - Scale the # of pods: kubectl scale --replicas=3 -f nginx_replicaset.yaml
+    - Delete the ReplicaSet: kubectl delete -f nginx_replicaset.yaml
+<br />
 - Q3: Briefly describe the process of a deployment rolling update, i.e., how are new version of pods created and how are old version of pods terminated. Which configurations can control the pods being created or deleted in parallel?
 - Q4: Inside the Kubernetes cluster, how to access a service named "svc1" offering HTTP service at Port 8000?
 - Q5: What is an Ingress in Kubernetes? What type of resources does an Ingress configuration typically point to as its backend? 
