@@ -34,6 +34,13 @@ The TA will check the completion of the following tasks:
 Each member of the group should be able to answer all of the following questions. The TA will ask each person one question selected at random, and the student must be able to answer the question to get credit for the lab.
 
 - Q1: How to check which Node a Pod is running on? Use an example to show where this information can be found.
+- A: kubectl get pods -o wide
+- Execution Steps:
+    - Start Pod from pods01.yaml: 
+        - cd /workspaces/ensf400-lab7-kubernetes-1/1-pods
+        - kubectl apply -f pods01.yaml
+    - Retrive the node the pod has started on: kubectl get pods -o wide
+<br />
 - Q2: How to scale a ReplicaSet? Use an example to demonstrate scaling a ReplicaSet to 3 replicas.
 - Q3: Briefly describe the process of a deployment rolling update, i.e., how are new version of pods created and how are old version of pods terminated. Which configurations can control the pods being created or deleted in parallel?
 - Q4: Inside the Kubernetes cluster, how to access a service named "svc1" offering HTTP service at Port 8000?
