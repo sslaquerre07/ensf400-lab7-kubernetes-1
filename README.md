@@ -52,5 +52,14 @@ Each member of the group should be able to answer all of the following questions
     - Delete the ReplicaSet: kubectl delete -f nginx_replicaset.yaml
 <br />
 - Q3: Briefly describe the process of a deployment rolling update, i.e., how are new version of pods created and how are old version of pods terminated. Which configurations can control the pods being created or deleted in parallel?
+- A: Process Description
+    1. New Pod Version Creation:
+        - Set image of updated version with: kubectl set image  deployments/nginx-deployment nginx=nginx:1.9.1
+        - That notifies the deployment to use a different image for your app and initiate a rolling update.
+        - New pods are created one by one
+    2. Old pod Destruction:
+        - For every new pod successfully created, an old one is destroyed to maintain the # of pods.
+    3. Configs controller pod creation/destruction in parallel:
+        - The number of replicas being created controls pod creation and deletion, and as seen above the scaling can be changed dynamically. (Unsure about this one)
 - Q4: Inside the Kubernetes cluster, how to access a service named "svc1" offering HTTP service at Port 8000?
 - Q5: What is an Ingress in Kubernetes? What type of resources does an Ingress configuration typically point to as its backend? 
