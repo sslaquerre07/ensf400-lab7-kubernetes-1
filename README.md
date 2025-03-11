@@ -69,3 +69,8 @@ Each member of the group should be able to answer all of the following questions
     3. This accesses the service from the port 8000 externally with: curl http://192.168.49.2:31704 -k
 <br />
 - Q5: What is an Ingress in Kubernetes? What type of resources does an Ingress configuration typically point to as its backend? 
+- A: 
+    - What is an Ingress in Kubernetes?: An object that allows access to your Kubernetes service from outside the Kubernetes cluster. Lets you consolidate the routing rules into a single resource (where you are sending requests from on FE, etc.)
+    - What type of resources does an Ingress configuration typically point to as its backend?
+        - A service that is to be used
+        - The port it is to be configured on.
