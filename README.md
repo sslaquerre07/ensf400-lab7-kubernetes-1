@@ -61,5 +61,11 @@ Each member of the group should be able to answer all of the following questions
         - For every new pod successfully created, an old one is destroyed to maintain the # of pods.
     3. Configs controller pod creation/destruction in parallel:
         - The number of replicas being created controls pod creation and deletion, and as seen above the scaling can be changed dynamically. (Unsure about this one)
+<br />
 - Q4: Inside the Kubernetes cluster, how to access a service named "svc1" offering HTTP service at Port 8000?
+- A: Process:
+    1. Change port in nodeport file from 8080 to 8000
+    2. Run kubectl apply -f nginx-svc-nodeport.yaml
+    3. This accesses the service from the port 8000 externally with: curl http://192.168.49.2:31704 -k
+<br />
 - Q5: What is an Ingress in Kubernetes? What type of resources does an Ingress configuration typically point to as its backend? 
